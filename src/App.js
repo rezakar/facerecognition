@@ -11,7 +11,9 @@ import './App.css';
 import Clarifai from 'clarifai';
 
 
-
+const app = new Clarifai.App({
+  apiKey: '8a10f9be33c345b8b3f72a5c73ba916f'
+});
 
 const particlesOptions = {
   particles: {
@@ -47,15 +49,15 @@ class App extends Component {
   }
 
   
-loadUser = (data) => {
-  this.setState({user: {
-    id: data.id,
-    name: data.name,
-    email: data.email,
-    entries: data.entries,
-    joined: data.joined
-  }})
-}
+  loadUser = (data) => {
+    this.setState({user: {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      entries: data.entries,
+      joined: data.joined
+    }})
+  }
 
   caculateFaceLocation = (data) => {
     const clarifaiFace =  data.outputs[0].data.regions[0].region_info.bounding_box
@@ -81,31 +83,51 @@ loadUser = (data) => {
 
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
-      fetch('https://stark-forest-78177.herokuapp.com/imageurl', {
-        method: 'post',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          input: this.state.input
-        })
-      })
-      .then(response => response.json())
-      .then(response => {
-        if (response) {
-          fetch('https://stark-forest-78177.herokuapp.com/image', {
-            method: 'put',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              id: this.state.user.id
+      // fetch('https://stark-forest-78177.herokuapp.com/imageurl', {
+      //   method: 'post',
+      //   headers: {'Content-Type': 'application/json'},
+      //   body: JSON.stringify({
+      //     input: this.state.input
+      //   })
+      // })
+      // .then(response => response.json())
+      // .then(response => {
+      //   if (response) {
+      //     fetch('https://stark-forest-78177.herokuapp.com/image', {
+      //       method: 'put',
+      //       headers: {'Content-Type': 'application/json'},
+      //       body: JSON.stringify({
+      //         id: this.state.user.id
+      //       })
+      //     })
+      //     .then(response => response.json())
+      //     .then(count => {
+      //       this.setState(Object.assign(this.state.user, {entries: count}))
+      //     })
+      //     .catch(console.log)
+      //   }
+      //   this.displayFaceBox(this.caculateFaceLocation(response))
+      // })
+      app.models.predict(
+        Clarifai.FACE_DETECT_MODEL, 
+        this.state.input)
+        .then(response => {
+          if (response) {
+            fetch('http://localhost:3000/image', {
+              method: 'put',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                id: this.state.user.id
+              })
             })
-          })
-          .then(response => response.json())
-          .then(count => {
-            this.setState(Object.assign(this.state.user, {entries: count}))
-          })
-          .catch(console.log)
-        }
-        this.displayFaceBox(this.caculateFaceLocation(response))
-      })
+            .then(response => response.json())
+            .then(count => {
+              this.setState(Object.assign(this.state.user, {entries: count}))
+            })
+            .catch(console.log)
+          }
+          this.displayFaceBox(this.caculateFaceLocation(response))
+        })
       .catch(err => console.log(err));
   }
 
@@ -138,12 +160,12 @@ loadUser = (data) => {
           need to save 'this.onInputChange'
           because 'onInputChange' is a property of the 'App' class.*/}
           <FaceRecognition box={box} imageUrl = {imageUrl}/>
-        </div>
+          </div>
           : (
             route === 'Signin'
             ? <Signin loadUser= {this.loadUser} onRouteChange={this.onRouteChange}/>
             : <Register loadUser= {this.loadUser} onRouteChange={this.onRouteChange}/>
-          )
+            )
         }
       </div>
     );

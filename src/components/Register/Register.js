@@ -25,7 +25,8 @@ class Register extends React.Component {
   }
 
   onSubmitRegister = () => {
-    fetch('https://stark-forest-78177.herokuapp.com/register',{
+    // fetch('https://stark-forest-78177.herokuapp.com/register',{
+      fetch('http://localhost:3000/register',{
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -44,7 +45,8 @@ class Register extends React.Component {
   }
 
   onSubmitSignIn = () => {
-    fetch('https://stark-forest-78177.herokuapp.com/signin',{
+    // fetch('https://stark-forest-78177.herokuapp.com/signin',{
+      fetch('http://localhost:3000/signin',{
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
