@@ -30,7 +30,7 @@ const particlesOptions = {
 const initialState = {
   input:'',
   imageUrl: '',
-  box: {},
+  boxes: [],
   route: 'Signin',
   isSignedIn: false,
   user: {
@@ -58,8 +58,8 @@ class App extends Component {
       joined: data.joined
     }})
   }
-
-  caculateFaceLocation = (data) => {
+/**************** We change this part for the reason of multi face detection */
+  /*caculateFaceLocation = (data) => {
     const clarifaiFace =  data.outputs[0].data.regions[0].region_info.bounding_box
     const image = document.getElementById('inputimage');
     const width = Number(image.width);
@@ -70,11 +70,27 @@ class App extends Component {
       rightCol: width - (clarifaiFace.right_col * width),
       bottomRow: height - (clarifaiFace.bottom_row * height)
     }
+  }*/
+
+  // these lines of the code are exactlly ass above just for multi face detection created
+  caculateFaceLocations = (data) => {
+    return  data.outputs[0].data.regions.map(face => {
+      const clarifaiFace =  face.region_info.bounding_box;
+      const image = document.getElementById('inputimage');
+      const width = Number(image.width);
+      const height = Number(image.height);
+      return {
+        leftCol: clarifaiFace.left_col * width,
+        topRow: clarifaiFace.top_row * height,
+        rightCol: width - (clarifaiFace.right_col * width),
+        bottomRow: height - (clarifaiFace.bottom_row * height)
+      }
+    });
   }
 
-  displayFaceBox = (box) => {
-    console.log(box);
-    this.setState({box: box});
+  displayFaceBoxes = (boxes) => {
+    console.log(boxes);
+    this.setState({boxes: boxes});
   }
 
   onInputChange = (event) => {
@@ -126,7 +142,7 @@ class App extends Component {
             })
             .catch(console.log)
           }
-          this.displayFaceBox(this.caculateFaceLocation(response))
+          this.displayFaceBoxes(this.caculateFaceLocations(response))
         })
       .catch(err => console.log(err));
   }
@@ -141,7 +157,7 @@ class App extends Component {
   }
 
   render() {
-    const { isSignedIn, imageUrl, route, box } = this.state;
+    const { isSignedIn, imageUrl, route, boxes } = this.state;
     return (
       <div className="App">
         <Particles className='particles' 
@@ -159,7 +175,7 @@ class App extends Component {
           {/* Remember that because it's part of this class to access it, you 
           need to save 'this.onInputChange'
           because 'onInputChange' is a property of the 'App' class.*/}
-          <FaceRecognition box={box} imageUrl = {imageUrl}/>
+          <FaceRecognition boxes={boxes} imageUrl = {imageUrl}/>
           </div>
           : (
             route === 'Signin'
